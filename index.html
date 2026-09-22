@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>🍹</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+    }
+
+    .container {
+        background: rgba(255,255,255,0.95);
+        padding: 40px;
+        border-radius: 25px;
+        text-align: center;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    }
+
+    h1 {
+        font-size: 30px;
+        margin-bottom: 35px;
+    }
+
+    button {
+        border: none;
+        padding: 15px 30px;
+        border-radius: 12px;
+        font-size: 18px;
+        cursor: pointer;
+        margin: 10px;
+        transition: transform 0.15s ease;
+    }
+
+    #yes {
+        background: #ff6b81;
+        color: white;
+    }
+
+    #no {
+        background: #ddd;
+        color: #333;
+        position: fixed;
+        z-index: 1000;
+    }
+
+    input {
+        display: block;
+        width: 100%;
+        padding: 14px;
+        margin: 15px 0;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        font-size: 17px;
+    }
+
+    #success,
+    #final {
+        display: none;
+    }
+
+    #confirm {
+        background: #ff6b81;
+        color: white;
+        width: 90%;
+    }
+
+    .heart {
+        position: fixed;
+        font-size: 25px;
+        animation: fall 3s linear forwards;
+        pointer-events: none;
+    }
+
+    @keyframes fall {
+        0% {
+            transform: translateY(-50px) rotate(0deg);
+            opacity: 1;
+        }
+
+        100% {
+            transform: translateY(100vh) rotate(360deg);
+            opacity: 0;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container" id="question">
+
+    <h1>Vuoi bere un ginetto con me?</h1>
+
+    <button id="yes">Sì 🍹</button>
+
+</div>
+
+<button id="no">No ❌</button>
+
+
+<div class="container" id="success">
+
+    <h1>Sapevo che avresti detto sì! 😏</h1>
+
+    <p>Scegli data e ora! 🍹</p>
+
+    <input type="date" id="date">
+
+    <input type="time" id="time">
+
+    <button id="confirm">CONFERMA 🍹</button>
+
+</div>
+
+
+<div class="container" id="final">
+
+    <h1>Perfetto! ❤️</h1>
+
+    <p>Ginetto confermato.<br>Ci vediamo presto! 😏</p>
+
+</div>
+
+
+<!-- EMAILJS -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+<script>
+
+const SERVICE_ID = "service_vr82hxt";
+const TEMPLATE_ID = "template_8owqazh";
+const PUBLIC_KEY = "eby62na2r3SEcHSDU";
+
+
+// Inizializza EmailJS
+emailjs.init({
+    publicKey: PUBLIC_KEY
+});
+
+
+const yesButton = document.getElementById("yes");
+const noButton = document.getElementById("no");
+
+const questionPage = document.getElementById("question");
+const successPage = document.getElementById("success");
+const finalPage = document.getElementById("final");
+
+const confirmButton = document.getElementById("confirm");
+
+
+// POSIZIONE INIZIALE DEL NO
+function setInitialNoPosition() {
+
+    const x = window.innerWidth / 2 + 40;
+    const y = window.innerHeight / 2 + 20;
+
+    noButton.style.left = x + "px";
+    noButton.style.top = y + "px";
+}
+
+setInitialNoPosition();
+
+
+// FUNZIONE PER FAR SCAPPARE IL NO
+function escapeNoButton(mouseX, mouseY) {
+
+    const buttonWidth = noButton.offsetWidth;
+    const buttonHeight = noButton.offsetHeight;
+
+    const margin = 20;
+
+    let newX;
+    let newY;
+
+    let attempts = 0;
+
+    do {
+
+        newX =
+            margin +
+            Math.random() *
+            (window.innerWidth - buttonWidth - margin * 2);
+
+        newY =
+            margin +
+            Math.random() *
+            (window.innerHeight - buttonHeight - margin * 2);
+
+        attempts++;
+
+        const buttonCenterX = newX + buttonWidth / 2;
+        const buttonCenterY = newY + buttonHeight / 2;
+
+        const distance = Math.sqrt(
+            Math.pow(buttonCenterX - mouseX, 2) +
+            Math.pow(buttonCenterY - mouseY, 2)
+        );
+
+        if (distance > 250) {
+            break;
+        }
+
+    } while (attempts < 50);
+
+
+    noButton.style.left = newX + "px";
+    noButton.style.top = newY + "px";
+
+    noButton.style.transform = "scale(0.8)";
+
+    setTimeout(() => {
+        noButton.style.transform = "scale(1)";
+    }, 120);
+}
+
+
+// IL NO SCAPPA QUANDO TI AVVICINI
+document.addEventListener("mousemove", function(event) {
+
+    if (questionPage.style.display !== "none") {
+
+        const rect = noButton.getBoundingClientRect();
+
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        const distance = Math.sqrt(
+            Math.pow(event.clientX - centerX, 2) +
+            Math.pow(event.clientY - centerY, 2)
+        );
+
+        if (distance < 180) {
+
+            escapeNoButton(
+                event.clientX,
+                event.clientY
+            );
+        }
+    }
+
+});
+
+
+// TELEFONO
+noButton.addEventListener("touchstart", function(event) {
+
+    event.preventDefault();
+
+    const touch = event.touches[0];
+
+    escapeNoButton(
+        touch.clientX,
+        touch.clientY
+    );
+
+});
+
+
+// CLICK SUL NO
+noButton.addEventListener("click", function(event) {
+
+    event.preventDefault();
+
+    escapeNoButton(
+        event.clientX || window.innerWidth / 2,
+        event.clientY || window.innerHeight / 2
+    );
+
+});
+
+
+// CLICK SU SI
+yesButton.addEventListener("click", function() {
+
+    questionPage.style.display = "none";
+    noButton.style.display = "none";
+
+    successPage.style.display = "block";
+
+});
+
+
+// CONFERMA
+confirmButton.addEventListener("click", async function() {
+
+    const date = document.getElementById("date").value;
+    const time = document.getElementById("time").value;
+
+    if (!date || !time) {
+
+        alert("Prima scegli data e ora 😏");
+
+        return;
+    }
+
+
+    // Trasforma la data in formato italiano
+    const dateParts = date.split("-");
+
+    const italianDate =
+        dateParts[2] + "/" +
+        dateParts[1] + "/" +
+        dateParts[0];
+
+
+    // Disabilita temporaneamente il pulsante
+    confirmButton.disabled = true;
+    confirmButton.innerText = "INVIO... 🍹";
+
+
+    try {
+
+        // INVIA EMAIL
+        await emailjs.send(
+            SERVICE_ID,
+            TEMPLATE_ID,
+            {
+                date: italianDate,
+                time: time
+            }
+        );
+
+
+        // Se la mail è stata inviata
+        successPage.style.display = "none";
+
+        finalPage.style.display = "block";
+
+
+        // CUORI ❤️
+        for (let i = 0; i < 30; i++) {
+
+            setTimeout(() => {
+
+                const heart = document.createElement("div");
+
+                heart.className = "heart";
+
+                heart.innerHTML = "❤️";
+
+                heart.style.left =
+                    Math.random() * 100 + "vw";
+
+                heart.style.top = "-30px";
+
+                heart.style.animationDuration =
+                    (2 + Math.random() * 2) + "s";
+
+                document.body.appendChild(heart);
+
+
+                setTimeout(() => {
+                    heart.remove();
+                }, 4000);
+
+            }, i * 100);
+
+        }
+
+
+    } catch (error) {
+
+        console.error("Errore EmailJS:", error);
+
+        alert(
+            "Ops! Qualcosa è andato storto 😭\n" +
+            "La prenotazione non è stata inviata."
+        );
+
+        confirmButton.disabled = false;
+        confirmButton.innerText = "CONFERMA 🍹";
+    }
+
+});
+
+
+// Mantiene il NO dentro lo schermo
+window.addEventListener("resize", function() {
+
+    if (questionPage.style.display !== "none") {
+
+        const rect = noButton.getBoundingClientRect();
+
+        if (
+            rect.right > window.innerWidth ||
+            rect.bottom > window.innerHeight ||
+            rect.left < 0 ||
+            rect.top < 0
+        ) {
+
+            setInitialNoPosition();
+
+        }
+    }
+
+});
+
+</script>
+
+</body>
+</html>
